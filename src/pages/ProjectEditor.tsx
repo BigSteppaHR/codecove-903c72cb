@@ -10,6 +10,7 @@ import { ArrowLeft, Code, Eye, Terminal, Settings, Zap, LogOut } from 'lucide-re
 import { useAuth } from '@/contexts/AuthContext';
 import CodeViewer from '@/components/CodeViewer';
 import ProjectPrompt from '@/components/ProjectPrompt';
+import ProjectPreview from '@/components/ProjectPreview';
 
 const ProjectEditor = () => {
   const { id } = useParams();
@@ -148,17 +149,7 @@ const ProjectEditor = () => {
           </TabsContent>
 
           <TabsContent value="preview">
-            <Card className="bg-slate-900 border-slate-800">
-              <CardHeader>
-                <CardTitle className="text-white">Preview</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="bg-slate-800 p-8 rounded-lg text-center">
-                  <Eye className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-                  <p className="text-slate-400">Preview functionality coming soon</p>
-                </div>
-              </CardContent>
-            </Card>
+            <ProjectPreview files={projectFiles || []} projectType={project.type} />
           </TabsContent>
 
           <TabsContent value="terminal">
