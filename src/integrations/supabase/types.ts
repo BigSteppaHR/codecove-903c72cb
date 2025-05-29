@@ -9,7 +9,228 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      billing_history: {
+        Row: {
+          amount: number | null
+          created_at: string | null
+          currency: string | null
+          id: string
+          plan_type: string | null
+          status: string | null
+          stripe_payment_intent_id: string | null
+          tokens_purchased: number | null
+          user_id: string | null
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          plan_type?: string | null
+          status?: string | null
+          stripe_payment_intent_id?: string | null
+          tokens_purchased?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          plan_type?: string | null
+          status?: string | null
+          stripe_payment_intent_id?: string | null
+          tokens_purchased?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_files: {
+        Row: {
+          content: string | null
+          created_at: string | null
+          file_path: string
+          file_type: string | null
+          id: string
+          project_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string | null
+          file_path: string
+          file_type?: string | null
+          id?: string
+          project_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          content?: string | null
+          created_at?: string | null
+          file_path?: string
+          file_type?: string | null
+          id?: string
+          project_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_files_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          created_at: string | null
+          deploy_url: string | null
+          description: string | null
+          github_repo_url: string | null
+          id: string
+          name: string
+          status: string | null
+          type: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          deploy_url?: string | null
+          description?: string | null
+          github_repo_url?: string | null
+          id?: string
+          name: string
+          status?: string | null
+          type?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          deploy_url?: string | null
+          description?: string | null
+          github_repo_url?: string | null
+          id?: string
+          name?: string
+          status?: string | null
+          type?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      token_usage: {
+        Row: {
+          ai_model: string | null
+          created_at: string | null
+          id: string
+          project_id: string | null
+          prompt: string | null
+          response_length: number | null
+          tokens_consumed: number
+          user_id: string | null
+        }
+        Insert: {
+          ai_model?: string | null
+          created_at?: string | null
+          id?: string
+          project_id?: string | null
+          prompt?: string | null
+          response_length?: number | null
+          tokens_consumed: number
+          user_id?: string | null
+        }
+        Update: {
+          ai_model?: string | null
+          created_at?: string | null
+          id?: string
+          project_id?: string | null
+          prompt?: string | null
+          response_length?: number | null
+          tokens_consumed?: number
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "token_usage_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "token_usage_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          avatar_url: string | null
+          clerk_user_id: string
+          created_at: string | null
+          email: string
+          first_name: string | null
+          id: string
+          last_name: string | null
+          plan_type: string | null
+          stripe_customer_id: string | null
+          tokens_limit: number | null
+          tokens_used: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          clerk_user_id: string
+          created_at?: string | null
+          email: string
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          plan_type?: string | null
+          stripe_customer_id?: string | null
+          tokens_limit?: number | null
+          tokens_used?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          clerk_user_id?: string
+          created_at?: string | null
+          email?: string
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          plan_type?: string | null
+          stripe_customer_id?: string | null
+          tokens_limit?: number | null
+          tokens_used?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
