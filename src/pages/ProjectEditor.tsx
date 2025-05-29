@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -5,12 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, Code, Eye, Terminal as TerminalIcon, Settings, Zap, LogOut } from 'lucide-react';
+import { ArrowLeft, Code, Eye, Terminal as TerminalIcon, Settings, Zap, LogOut, Rocket } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import CodeViewer from '@/components/CodeViewer';
 import ProjectPrompt from '@/components/ProjectPrompt';
 import ProjectPreview from '@/components/ProjectPreview';
 import Terminal from '@/components/Terminal';
+import ProjectDeployment from '@/components/ProjectDeployment';
 
 const ProjectEditor = () => {
   const { id } = useParams();
@@ -134,6 +136,10 @@ const ProjectEditor = () => {
               <TerminalIcon className="w-4 h-4 mr-2" />
               Terminal
             </TabsTrigger>
+            <TabsTrigger value="deploy" className="data-[state=active]:bg-slate-800">
+              <Rocket className="w-4 h-4 mr-2" />
+              Deploy
+            </TabsTrigger>
             <TabsTrigger value="settings" className="data-[state=active]:bg-slate-800">
               <Settings className="w-4 h-4 mr-2" />
               Settings
@@ -154,6 +160,10 @@ const ProjectEditor = () => {
 
           <TabsContent value="terminal">
             <Terminal projectId={project.id} projectType={project.type} />
+          </TabsContent>
+
+          <TabsContent value="deploy">
+            <ProjectDeployment projectId={project.id} projectName={project.name} />
           </TabsContent>
 
           <TabsContent value="settings">
