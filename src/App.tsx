@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,9 +7,9 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import LandingPage from "./pages/LandingPage";
 import AuthPage from "./pages/AuthPage";
-import Dashboard from "./pages/Dashboard";
-import ProjectEditor from "./pages/ProjectEditor";
 import NotFound from "./pages/NotFound";
+import InstantEditor from "./pages/InstantEditor";
+import ProjectShare from "./pages/ProjectShare";
 
 const queryClient = new QueryClient();
 
@@ -25,21 +24,14 @@ const App = () => (
             <Route path="/" element={<LandingPage />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route 
-              path="/dashboard" 
+              path="/new" 
               element={
                 <ProtectedRoute>
-                  <Dashboard />
+                  <InstantEditor />
                 </ProtectedRoute>
               } 
             />
-            <Route 
-              path="/project/:id" 
-              element={
-                <ProtectedRoute>
-                  <ProjectEditor />
-                </ProtectedRoute>
-              } 
-            />
+            <Route path="/p/:id" element={<ProjectShare />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

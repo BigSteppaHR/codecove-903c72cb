@@ -1,267 +1,267 @@
-
-import { Navigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Code, Smartphone, Terminal, Zap, ArrowRight, Check, Star } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { motion } from "framer-motion";
+import { ArrowRight, Code2, Zap, Globe, Share2, Rocket, Github, Sparkles, Laptop, Server, MobilePhone } from "lucide-react";
 
 const LandingPage = () => {
   const { user, loading } = useAuth();
+  const navigate = useNavigate();
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="text-white">Loading...</div>
-      </div>
-    );
-  }
+  // Redirect to /new if user is authenticated
+  useEffect(() => {
+    if (user && !loading) {
+      navigate("/new");
+    }
+  }, [user, loading, navigate]);
 
-  if (user) {
-    return <Navigate to="/dashboard" replace />;
-  }
+  // Example projects to showcase
+  const exampleProjects = [
+    {
+      title: "React Dashboard",
+      description: "Analytics dashboard with charts and data visualization",
+      type: "web",
+      tags: ["React", "Charts", "Tailwind"],
+      image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop"
+    },
+    {
+      title: "E-commerce API",
+      description: "RESTful API for product catalog and orders",
+      type: "api",
+      tags: ["Node.js", "Express", "REST"],
+      image: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=2034&auto=format&fit=crop"
+    },
+    {
+      title: "Mobile Fitness App",
+      description: "Track workouts and health metrics on the go",
+      type: "mobile",
+      tags: ["React Native", "Expo", "Health"],
+      image: "https://images.unsplash.com/photo-1526947425960-945c6e72858f?q=80&w=2070&auto=format&fit=crop"
+    }
+  ];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      <div className="container mx-auto px-4">
-        {/* Header */}
-        <header className="flex items-center justify-between py-6 border-b border-slate-800">
-          <div className="flex items-center space-x-2">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-              <Code className="w-6 h-6 text-white" />
-            </div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
-              Codecove
-            </h1>
+    <div className="min-h-screen flex flex-col">
+      {/* Header */}
+      <header className="border-b py-4 px-6 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <Code2 className="h-6 w-6 text-primary" />
+            <h1 className="text-xl font-bold">Codecove</h1>
           </div>
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" className="text-slate-300 hover:text-white hover:bg-slate-800">
-              Features
-            </Button>
-            <Button variant="ghost" className="text-slate-300 hover:text-white hover:bg-slate-800">
-              Pricing
-            </Button>
-            <Button 
-              variant="outline" 
-              className="border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white"
-              onClick={() => window.location.href = '/auth'}
-            >
-              Sign In
-            </Button>
+          <nav className="hidden md:flex items-center gap-6">
+            <a href="#features" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Features</a>
+            <a href="#examples" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Examples</a>
+            <a href="https://github.com/BigSteppaHR/codecove-903c72cb" target="_blank" rel="noreferrer" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+              <Github className="h-4 w-4" />
+              GitHub
+            </a>
+          </nav>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => navigate("/auth")}>Sign In</Button>
+            <Button onClick={() => navigate("/new")}>Start Coding</Button>
           </div>
-        </header>
+        </div>
+      </header>
 
-        {/* Hero Section */}
-        <section className="text-center py-24">
-          <div className="max-w-4xl mx-auto">
-            <div className="inline-flex items-center px-4 py-2 bg-slate-800/50 border border-slate-700 rounded-full text-sm text-slate-300 mb-8">
-              <Star className="w-4 h-4 mr-2 text-yellow-400" />
-              Trusted by 10,000+ developers worldwide
-            </div>
-            
-            <h2 className="text-6xl font-bold mb-6 leading-tight">
-              Build Full-Stack Apps with{' '}
-              <span className="bg-gradient-to-r from-blue-400 via-purple-500 to-cyan-400 bg-clip-text text-transparent">
-                AI Magic
-              </span>
-            </h2>
-            
-            <p className="text-xl text-slate-400 mb-10 max-w-3xl mx-auto leading-relaxed">
-              Transform your ideas into production-ready applications in minutes. 
-              Generate complete web and mobile apps with AI-powered code generation, 
-              from React to Next.js and Expo mobile apps.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <Button 
-                size="lg" 
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 text-lg font-semibold shadow-xl"
-                onClick={() => window.location.href = '/auth'}
-              >
-                Start Building - Free
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-              <Button variant="outline" size="lg" className="border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white px-8 py-4 text-lg">
-                Watch Demo
-              </Button>
-            </div>
-
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-8 max-w-2xl mx-auto">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-white mb-1">10K+</div>
-                <div className="text-sm text-slate-400">Apps Generated</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-white mb-1">95%</div>
-                <div className="text-sm text-slate-400">Code Accuracy</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-white mb-1">5min</div>
-                <div className="text-sm text-slate-400">Avg Build Time</div>
-              </div>
-            </div>
+      {/* Hero Section */}
+      <section className="py-20 px-6">
+        <div className="container mx-auto text-center max-w-4xl">
+          <Badge variant="outline" className="mb-4 px-3 py-1">Powered by Claude 4.0</Badge>
+          <motion.h1 
+            className="text-4xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-500"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            Instant Code Generation & Deployment
+          </motion.h1>
+          <motion.p 
+            className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
+            Describe what you want to build and get working code instantly. 
+            Edit, preview, and deploy in one seamless experience.
+          </motion.p>
+          <motion.div 
+            className="flex flex-col sm:flex-row gap-4 justify-center mb-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <Button size="lg" onClick={() => navigate("/new")} className="group">
+              Start Coding Now
+              <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </Button>
+            <Button size="lg" variant="outline" onClick={() => navigate("/auth")}>
+              Sign Up Free
+            </Button>
+          </motion.div>
+          <div className="text-sm text-muted-foreground">
+            No credit card required • Instant access • 10,000 tokens free
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Features */}
-        <section className="py-24">
-          <div className="text-center mb-16">
-            <h3 className="text-4xl font-bold mb-4">Everything you need to ship faster</h3>
-            <p className="text-xl text-slate-400 max-w-2xl mx-auto">
-              From idea to deployment with powerful AI tools and integrations
-            </p>
+      {/* Features Section */}
+      <section id="features" className="py-16 px-6 bg-muted/50">
+        <div className="container mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-12">Why Codecove?</h2>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Card className="bg-background">
+              <CardHeader>
+                <Sparkles className="h-10 w-10 text-primary mb-2" />
+                <CardTitle>Instant Generation</CardTitle>
+                <CardDescription>Claude 4.0 AI generates complete, working code from your description</CardDescription>
+              </CardHeader>
+            </Card>
+            <Card className="bg-background">
+              <CardHeader>
+                <Laptop className="h-10 w-10 text-primary mb-2" />
+                <CardTitle>Real-time Preview</CardTitle>
+                <CardDescription>See your code running instantly with live preview as you edit</CardDescription>
+              </CardHeader>
+            </Card>
+            <Card className="bg-background">
+              <CardHeader>
+                <Share2 className="h-10 w-10 text-primary mb-2" />
+                <CardTitle>Share with a Link</CardTitle>
+                <CardDescription>Instantly share your projects with anyone using a simple URL</CardDescription>
+              </CardHeader>
+            </Card>
+            <Card className="bg-background">
+              <CardHeader>
+                <Rocket className="h-10 w-10 text-primary mb-2" />
+                <CardTitle>Deploy Anywhere</CardTitle>
+                <CardDescription>One-click deployment to Vercel, Netlify, or export your code</CardDescription>
+              </CardHeader>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* What You Can Build */}
+      <section id="examples" className="py-16 px-6">
+        <div className="container mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-4">What You Can Build</h2>
+          <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
+            From web apps to mobile experiences to backend APIs, Codecove handles it all with a simple prompt
+          </p>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            {exampleProjects.map((project, index) => (
+              <Card key={index} className="overflow-hidden group">
+                <div className="h-48 overflow-hidden">
+                  <img 
+                    src={project.image} 
+                    alt={project.title} 
+                    className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                  />
+                </div>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle>{project.title}</CardTitle>
+                    <Badge variant="outline" className="capitalize">{project.type}</Badge>
+                  </div>
+                  <CardDescription>{project.description}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {project.tags.map((tag, i) => (
+                      <Badge key={i} variant="secondary">{tag}</Badge>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700 hover:border-slate-600 transition-all duration-300 hover:shadow-xl">
-              <CardHeader>
-                <div className="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center mb-4">
-                  <Code className="w-6 h-6 text-blue-400" />
-                </div>
-                <CardTitle className="text-white text-lg">AI Code Generation</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-slate-400 text-sm leading-relaxed">
-                  Generate complete applications with AI. Full folder structure, components, and business logic in seconds.
-                </CardDescription>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700 hover:border-slate-600 transition-all duration-300 hover:shadow-xl">
-              <CardHeader>
-                <div className="w-12 h-12 bg-green-500/10 rounded-lg flex items-center justify-center mb-4">
-                  <Smartphone className="w-6 h-6 text-green-400" />
-                </div>
-                <CardTitle className="text-white text-lg">Mobile Apps</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-slate-400 text-sm leading-relaxed">
-                  Build React Native apps with Expo. Generate APKs and deploy to app stores with one click.
-                </CardDescription>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700 hover:border-slate-600 transition-all duration-300 hover:shadow-xl">
-              <CardHeader>
-                <div className="w-12 h-12 bg-purple-500/10 rounded-lg flex items-center justify-center mb-4">
-                  <Terminal className="w-6 h-6 text-purple-400" />
-                </div>
-                <CardTitle className="text-white text-lg">Cloud Terminal</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-slate-400 text-sm leading-relaxed">
-                  Full terminal access in your browser. Run npm commands, build apps, and deploy without setup.
-                </CardDescription>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700 hover:border-slate-600 transition-all duration-300 hover:shadow-xl">
-              <CardHeader>
-                <div className="w-12 h-12 bg-yellow-500/10 rounded-lg flex items-center justify-center mb-4">
-                  <Zap className="w-6 h-6 text-yellow-400" />
-                </div>
-                <CardTitle className="text-white text-lg">Instant Deploy</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-slate-400 text-sm leading-relaxed">
-                  Deploy to Vercel, push to GitHub, and share your creations instantly with automatic CI/CD.
-                </CardDescription>
-              </CardContent>
-            </Card>
+          <div className="text-center mt-12">
+            <Button size="lg" onClick={() => navigate("/new")}>
+              Start Building Your Own
+              <Zap className="ml-2 h-4 w-4" />
+            </Button>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Pricing */}
-        <section className="py-24">
-          <div className="text-center mb-16">
-            <h3 className="text-4xl font-bold mb-4">Choose your plan</h3>
-            <p className="text-xl text-slate-400 max-w-2xl mx-auto">
-              Simple, transparent pricing that scales with your needs
-            </p>
-          </div>
+      {/* Social Proof */}
+      <section className="py-16 px-6 bg-muted/50">
+        <div className="container mx-auto text-center max-w-4xl">
+          <h2 className="text-3xl font-bold mb-12">Loved by Developers</h2>
           
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <Card className="bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700 p-8">
-              <CardHeader className="pb-8">
-                <CardTitle className="text-white text-2xl mb-2">Free Plan</CardTitle>
-                <CardDescription className="text-slate-400">Perfect for getting started</CardDescription>
-                <div className="mt-4">
-                  <span className="text-4xl font-bold text-white">10,000</span>
-                  <span className="text-lg text-slate-400 ml-2">tokens/month</span>
+          <div className="grid md:grid-cols-3 gap-6">
+            <Card className="text-left">
+              <CardContent className="pt-6">
+                <p className="mb-4">"Codecove has completely transformed my workflow. I can prototype ideas in minutes instead of hours."</p>
+                <div className="flex items-center">
+                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold mr-3">JD</div>
+                  <div>
+                    <p className="font-medium">John Doe</p>
+                    <p className="text-sm text-muted-foreground">Frontend Developer</p>
+                  </div>
                 </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  {[
-                    'Claude 3.5 Sonnet AI',
-                    'Web app generation',
-                    'Basic mobile apps',
-                    'GitHub integration',
-                    'Community support'
-                  ].map((feature, index) => (
-                    <div key={index} className="flex items-center text-slate-300">
-                      <Check className="w-4 h-4 text-green-400 mr-3" />
-                      {feature}
-                    </div>
-                  ))}
-                </div>
-                <Button 
-                  className="w-full mt-8 bg-slate-700 hover:bg-slate-600 text-white"
-                  onClick={() => window.location.href = '/auth'}
-                >
-                  Get Started
-                </Button>
               </CardContent>
             </Card>
-
-            <Card className="bg-gradient-to-br from-blue-900/50 to-purple-900/50 border-blue-500/50 p-8 relative overflow-hidden">
-              <div className="absolute top-4 right-4">
-                <span className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                  Most Popular
-                </span>
-              </div>
-              <CardHeader className="pb-8">
-                <CardTitle className="text-white text-2xl mb-2">Pro Plan</CardTitle>
-                <CardDescription className="text-slate-400">For serious developers</CardDescription>
-                <div className="mt-4">
-                  <span className="text-4xl font-bold text-white">100,000</span>
-                  <span className="text-lg text-slate-400 ml-2">tokens/month</span>
+            <Card className="text-left">
+              <CardContent className="pt-6">
+                <p className="mb-4">"The Claude 4.0 integration is incredible. The code quality is amazing and it understands exactly what I need."</p>
+                <div className="flex items-center">
+                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold mr-3">AS</div>
+                  <div>
+                    <p className="font-medium">Alice Smith</p>
+                    <p className="text-sm text-muted-foreground">Full-Stack Engineer</p>
+                  </div>
                 </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  {[
-                    'Claude 4 Opus AI',
-                    'Advanced mobile apps',
-                    'Priority generation',
-                    'Custom deployments',
-                    'Priority support'
-                  ].map((feature, index) => (
-                    <div key={index} className="flex items-center text-slate-300">
-                      <Check className="w-4 h-4 text-green-400 mr-3" />
-                      {feature}
-                    </div>
-                  ))}
+              </CardContent>
+            </Card>
+            <Card className="text-left">
+              <CardContent className="pt-6">
+                <p className="mb-4">"Being able to share my projects with a simple link has made collaboration so much easier. Game changer!"</p>
+                <div className="flex items-center">
+                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold mr-3">RJ</div>
+                  <div>
+                    <p className="font-medium">Robert Johnson</p>
+                    <p className="text-sm text-muted-foreground">Startup Founder</p>
+                  </div>
                 </div>
-                <Button className="w-full mt-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
-                  Upgrade to Pro
-                </Button>
               </CardContent>
             </Card>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Footer */}
-        <footer className="py-12 border-t border-slate-800 text-center">
-          <div className="flex items-center justify-center space-x-2 mb-4">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-              <Code className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xl font-bold text-white">Codecove</span>
+      {/* Final CTA */}
+      <section className="py-20 px-6 bg-gradient-to-r from-primary/10 to-blue-500/10">
+        <div className="container mx-auto text-center max-w-3xl">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready to Start Building?</h2>
+          <p className="text-xl text-muted-foreground mb-8">
+            Join thousands of developers building faster with Codecove
+          </p>
+          <Button size="lg" onClick={() => navigate("/new")} className="group">
+            Start Coding Now
+            <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+          </Button>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t py-8 px-6">
+        <div className="container mx-auto flex flex-col md:flex-row justify-between items-center">
+          <div className="flex items-center gap-2 mb-4 md:mb-0">
+            <Code2 className="h-5 w-5 text-primary" />
+            <span className="font-semibold">Codecove</span>
           </div>
-          <p className="text-slate-400">&copy; 2024 Codecove. Built for developers, by developers.</p>
-        </footer>
-      </div>
+          <div className="text-sm text-muted-foreground">
+            © {new Date().getFullYear()} Codecove. All rights reserved.
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
