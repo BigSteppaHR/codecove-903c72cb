@@ -15,15 +15,8 @@ interface DatabaseManagerProps {
 }
 
 interface TableInfo {
-  table_name: string;
-  table_schema: string;
-}
-
-interface ColumnInfo {
-  column_name: string;
-  data_type: string;
-  is_nullable: string;
-  column_default: string | null;
+  name: string;
+  schema: string;
 }
 
 const DatabaseManager = ({ projectId }: DatabaseManagerProps) => {
@@ -33,82 +26,99 @@ const DatabaseManager = ({ projectId }: DatabaseManagerProps) => {
   const [activeTab, setActiveTab] = useState('tables');
   const queryClient = useQueryClient();
 
-  // Fetch all tables
-  const { data: tables, isLoading: tablesLoading } = useQuery({
-    queryKey: ['database-tables'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('information_schema.tables')
-        .select('table_name, table_schema')
-        .eq('table_schema', 'public')
-        .order('table_name');
-      
-      if (error) throw error;
-      return data as TableInfo[];
-    },
-  });
-
-  // Fetch table structure for selected table
-  const { data: tableStructure } = useQuery({
-    queryKey: ['table-structure', selectedTable],
-    queryFn: async () => {
-      if (!selectedTable) return null;
-      
-      const { data, error } = await supabase
-        .from('information_schema.columns')
-        .select('column_name, data_type, is_nullable, column_default')
-        .eq('table_name', selectedTable)
-        .eq('table_schema', 'public')
-        .order('ordinal_position');
-      
-      if (error) throw error;
-      return data as ColumnInfo[];
-    },
-    enabled: !!selectedTable,
-  });
+  // Available tables from the database schema
+  const availableTables: TableInfo[] = [
+    { name: 'profiles', schema: 'public' },
+    { name: 'projects', schema: 'public' },
+    { name: 'project_files', schema: 'public' },
+    { name: 'project_collaborators', schema: 'public' },
+    { name: 'project_invitations', schema: 'public' },
+    { name: 'billing_history', schema: 'public' },
+    { name: 'token_usage', schema: 'public' },
+  ];
 
   // Fetch table data for selected table
-  const { data: tableData, refetch: refetchTableData } = useQuery({
+  const { data: tableData, refetch: refetchTableData, isLoading: tableDataLoading } = useQuery({
     queryKey: ['table-data', selectedTable],
     queryFn: async () => {
       if (!selectedTable) return null;
       
-      const { data, error } = await supabase
-        .from(selectedTable)
-        .select('*')
-        .limit(100);
+      let query;
+      switch (selectedTable) {
+        case 'profiles':
+          query = supabase.from('profiles').select('*').limit(100);
+          break;
+        case 'projects':
+          query = supabase.from('projects').select('*').limit(100);
+          break;
+        case 'project_files':
+          query = supabase.from('project_files').select('*').limit(100);
+          break;
+        case 'project_collaborators':
+          query = supabase.from('project_collaborators').select('*').limit(100);
+          break;
+        case 'project_invitations':
+          query = supabase.from('project_invitations').select('*').limit(100);
+          break;
+        case 'billing_history':
+          query = supabase.from('billing_history').select('*').limit(100);
+          break;
+        case 'token_usage':
+          query = supabase.from('token_usage').select('*').limit(100);
+          break;
+        default:
+          return null;
+      }
       
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
     enabled: !!selectedTable,
   });
 
-  // Execute SQL query mutation
-  const executeSqlMutation = useMutation({
-    mutationFn: async (query: string) => {
-      const { data, error } = await supabase.rpc('execute_sql', { 
-        sql_query: query 
-      });
-      
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: (data) => {
-      setQueryResults(data || []);
-      toast.success('Query executed successfully');
-    },
-    onError: (error: any) => {
-      toast.error(`Query failed: ${error.message}`);
-    },
-  });
-
-  const handleExecuteQuery = () => {
-    if (!sqlQuery.trim()) {
-      toast.error('Please enter a SQL query');
-      return;
-    }
-    executeSqlMutation.mutate(sqlQuery);
+  // Get table structure info
+  const getTableStructure = (tableName: string) => {
+    const structures: Record<string, Array<{column_name: string, data_type: string, is_nullable: string, column_default: string | null}>> = {
+      profiles: [
+        { column_name: 'id', data_type: 'uuid', is_nullable: 'NO', column_default: null },
+        { column_name: 'email', data_type: 'text', is_nullable: 'YES', column_default: null },
+        { column_name: 'first_name', data_type: 'text', is_nullable: 'YES', column_default: null },
+        { column_name: 'last_name', data_type: 'text', is_nullable: 'YES', column_default: null },
+        { column_name: 'avatar_url', data_type: 'text', is_nullable: 'YES', column_default: null },
+        { column_name: 'plan_type', data_type: 'text', is_nullable: 'YES', column_default: 'free' },
+        { column_name: 'tokens_used', data_type: 'integer', is_nullable: 'YES', column_default: '0' },
+        { column_name: 'tokens_limit', data_type: 'integer', is_nullable: 'YES', column_default: '10000' },
+        { column_name: 'created_at', data_type: 'timestamp with time zone', is_nullable: 'YES', column_default: 'now()' },
+        { column_name: 'updated_at', data_type: 'timestamp with time zone', is_nullable: 'YES', column_default: 'now()' },
+      ],
+      projects: [
+        { column_name: 'id', data_type: 'uuid', is_nullable: 'NO', column_default: 'gen_random_uuid()' },
+        { column_name: 'name', data_type: 'text', is_nullable: 'NO', column_default: null },
+        { column_name: 'description', data_type: 'text', is_nullable: 'YES', column_default: null },
+        { column_name: 'type', data_type: 'text', is_nullable: 'YES', column_default: 'web' },
+        { column_name: 'status', data_type: 'text', is_nullable: 'YES', column_default: 'draft' },
+        { column_name: 'framework', data_type: 'text', is_nullable: 'YES', column_default: 'react' },
+        { column_name: 'template', data_type: 'text', is_nullable: 'YES', column_default: 'blank' },
+        { column_name: 'user_id', data_type: 'uuid', is_nullable: 'YES', column_default: null },
+        { column_name: 'deploy_url', data_type: 'text', is_nullable: 'YES', column_default: null },
+        { column_name: 'github_repo_url', data_type: 'text', is_nullable: 'YES', column_default: null },
+        { column_name: 'last_generated_at', data_type: 'timestamp with time zone', is_nullable: 'YES', column_default: null },
+        { column_name: 'created_at', data_type: 'timestamp with time zone', is_nullable: 'YES', column_default: 'now()' },
+        { column_name: 'updated_at', data_type: 'timestamp with time zone', is_nullable: 'YES', column_default: 'now()' },
+      ],
+      project_files: [
+        { column_name: 'id', data_type: 'uuid', is_nullable: 'NO', column_default: 'gen_random_uuid()' },
+        { column_name: 'project_id', data_type: 'uuid', is_nullable: 'YES', column_default: null },
+        { column_name: 'file_path', data_type: 'text', is_nullable: 'NO', column_default: null },
+        { column_name: 'file_type', data_type: 'text', is_nullable: 'YES', column_default: null },
+        { column_name: 'content', data_type: 'text', is_nullable: 'YES', column_default: null },
+        { column_name: 'created_at', data_type: 'timestamp with time zone', is_nullable: 'YES', column_default: 'now()' },
+        { column_name: 'updated_at', data_type: 'timestamp with time zone', is_nullable: 'YES', column_default: 'now()' },
+      ],
+    };
+    
+    return structures[tableName] || [];
   };
 
   const handleTableSelect = (tableName: string) => {
@@ -116,13 +126,16 @@ const DatabaseManager = ({ projectId }: DatabaseManagerProps) => {
     setActiveTab('data');
   };
 
-  if (tablesLoading) {
-    return (
-      <div className="h-full flex items-center justify-center">
-        <div className="text-slate-400">Loading database...</div>
-      </div>
-    );
-  }
+  const handleExecuteQuery = () => {
+    if (!sqlQuery.trim()) {
+      toast.error('Please enter a SQL query');
+      return;
+    }
+    
+    // For now, show a message that custom SQL execution requires additional setup
+    toast.error('Custom SQL execution requires additional database function setup. Please use the table browser for now.');
+    setQueryResults([]);
+  };
 
   return (
     <div className="h-full flex flex-col bg-slate-950 text-white">
@@ -142,17 +155,17 @@ const DatabaseManager = ({ projectId }: DatabaseManagerProps) => {
               Tables
             </h3>
             <div className="space-y-1">
-              {tables?.map((table) => (
+              {availableTables.map((table) => (
                 <button
-                  key={table.table_name}
-                  onClick={() => handleTableSelect(table.table_name)}
+                  key={table.name}
+                  onClick={() => handleTableSelect(table.name)}
                   className={`w-full text-left px-3 py-2 rounded text-sm transition-colors ${
-                    selectedTable === table.table_name
+                    selectedTable === table.name
                       ? 'bg-blue-600 text-white'
                       : 'text-slate-300 hover:bg-slate-800'
                   }`}
                 >
-                  {table.table_name}
+                  {table.name}
                 </button>
               ))}
             </div>
@@ -198,9 +211,10 @@ const DatabaseManager = ({ projectId }: DatabaseManagerProps) => {
                       variant="outline"
                       size="sm"
                       onClick={() => refetchTableData()}
+                      disabled={tableDataLoading}
                       className="border-slate-700 text-slate-300 hover:bg-slate-800"
                     >
-                      <RefreshCw className="w-4 h-4" />
+                      <RefreshCw className={`w-4 h-4 ${tableDataLoading ? 'animate-spin' : ''}`} />
                     </Button>
                   </CardHeader>
                   <CardContent className="overflow-auto">
@@ -229,7 +243,7 @@ const DatabaseManager = ({ projectId }: DatabaseManagerProps) => {
                       </Table>
                     ) : (
                       <div className="text-center text-slate-400 py-8">
-                        No data found in this table
+                        {tableDataLoading ? 'Loading...' : 'No data found in this table'}
                       </div>
                     )}
                   </CardContent>
@@ -245,7 +259,7 @@ const DatabaseManager = ({ projectId }: DatabaseManagerProps) => {
             </TabsContent>
 
             <TabsContent value="structure" className="flex-1 p-4">
-              {selectedTable && tableStructure ? (
+              {selectedTable ? (
                 <Card className="bg-slate-900 border-slate-800 h-full">
                   <CardHeader>
                     <CardTitle className="text-white">{selectedTable} - Structure</CardTitle>
@@ -261,7 +275,7 @@ const DatabaseManager = ({ projectId }: DatabaseManagerProps) => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {tableStructure.map((column) => (
+                        {getTableStructure(selectedTable).map((column) => (
                           <TableRow key={column.column_name}>
                             <TableCell className="text-slate-200 font-medium">
                               {column.column_name}
@@ -298,7 +312,7 @@ const DatabaseManager = ({ projectId }: DatabaseManagerProps) => {
                     <CardTitle className="text-white">SQL Query Editor</CardTitle>
                     <Button
                       onClick={handleExecuteQuery}
-                      disabled={executeSqlMutation.isPending || !sqlQuery.trim()}
+                      disabled={!sqlQuery.trim()}
                       className="bg-blue-600 hover:bg-blue-700"
                     >
                       <Play className="w-4 h-4 mr-2" />
@@ -316,6 +330,11 @@ const DatabaseManager = ({ projectId }: DatabaseManagerProps) => {
                     />
                   </div>
                   
+                  <div className="text-sm text-slate-400 bg-slate-800 p-3 rounded">
+                    <p className="font-medium mb-1">Available tables:</p>
+                    <p>{availableTables.map(t => t.name).join(', ')}</p>
+                  </div>
+
                   {queryResults.length > 0 && (
                     <div className="flex-1 overflow-auto">
                       <h4 className="text-slate-300 mb-2">Query Results:</h4>
