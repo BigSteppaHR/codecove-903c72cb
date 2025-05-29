@@ -96,7 +96,7 @@ const Dashboard = () => {
     }
   };
 
-  // Show errors if they occur
+  // Show errors if they occur - but only show projects error if it's not a policy error
   useEffect(() => {
     if (profileError) {
       console.error('Profile error:', profileError);
@@ -107,7 +107,7 @@ const Dashboard = () => {
       });
     }
     
-    if (projectsError) {
+    if (projectsError && !projectsError.message?.includes('infinite recursion')) {
       console.error('Projects error:', projectsError);
       toast({
         title: 'Projects Error',
