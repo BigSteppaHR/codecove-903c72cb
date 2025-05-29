@@ -1,6 +1,5 @@
 
 import { useState } from 'react';
-import { useUser } from '@clerk/clerk-react';
 import { useMutation } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -10,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 import { Code, Smartphone, Globe } from 'lucide-react';
 
 interface CreateProjectDialogProps {
@@ -19,7 +19,7 @@ interface CreateProjectDialogProps {
 }
 
 const CreateProjectDialog = ({ open, onOpenChange, onSuccess }: CreateProjectDialogProps) => {
-  const { user } = useUser();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: '',
@@ -29,19 +29,12 @@ const CreateProjectDialog = ({ open, onOpenChange, onSuccess }: CreateProjectDia
 
   const createProjectMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      // First get the user's internal ID
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('id')
-        .eq('clerk_user_id', user?.id)
-        .single();
-
-      if (userError) throw userError;
+      if (!user?.id) throw new Error('User not authenticated');
 
       const { data: project, error } = await supabase
         .from('projects')
         .insert({
-          user_id: userData.id,
+          user_id: user.id,
           name: data.name,
           description: data.description,
           type: data.type,
