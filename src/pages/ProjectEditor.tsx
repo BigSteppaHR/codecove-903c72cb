@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -8,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { ArrowLeft, Code, Eye, Terminal as TerminalIcon, Settings, Zap, LogOut, Rocket, Users } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import CodeViewer from '@/components/CodeViewer';
+import CodeEditor from '@/components/CodeEditor';
 import ProjectPrompt from '@/components/ProjectPrompt';
 import ProjectPreview from '@/components/ProjectPreview';
 import Terminal from '@/components/Terminal';
@@ -121,93 +120,121 @@ const ProjectEditor = () => {
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="bg-slate-900 border-slate-800">
-            <TabsTrigger value="prompt" className="data-[state=active]:bg-slate-800">
-              <Zap className="w-4 h-4 mr-2" />
-              Generate
-            </TabsTrigger>
-            <TabsTrigger value="code" className="data-[state=active]:bg-slate-800">
-              <Code className="w-4 h-4 mr-2" />
-              Code
-            </TabsTrigger>
-            <TabsTrigger value="preview" className="data-[state=active]:bg-slate-800">
-              <Eye className="w-4 h-4 mr-2" />
-              Preview
-            </TabsTrigger>
-            <TabsTrigger value="terminal" className="data-[state=active]:bg-slate-800">
-              <TerminalIcon className="w-4 h-4 mr-2" />
-              Terminal
-            </TabsTrigger>
-            <TabsTrigger value="deploy" className="data-[state=active]:bg-slate-800">
-              <Rocket className="w-4 h-4 mr-2" />
-              Deploy
-            </TabsTrigger>
-            <TabsTrigger value="collaborate" className="data-[state=active]:bg-slate-800">
-              <Users className="w-4 h-4 mr-2" />
-              Share
-            </TabsTrigger>
-            <TabsTrigger value="settings" className="data-[state=active]:bg-slate-800">
-              <Settings className="w-4 h-4 mr-2" />
-              Settings
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="prompt">
+      <div className="flex h-[calc(100vh-80px)]">
+        {/* Left Sidebar - Always show prompt */}
+        <div className="w-80 border-r border-slate-800 bg-slate-900 overflow-y-auto">
+          <div className="p-4">
             <ProjectPrompt project={project as any} />
-          </TabsContent>
+          </div>
+        </div>
 
-          <TabsContent value="code">
-            <CodeViewer files={projectFiles || []} />
-          </TabsContent>
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col">
+          {/* Tab Navigation */}
+          <div className="border-b border-slate-800 bg-slate-900">
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="bg-transparent border-none h-12 w-full justify-start rounded-none p-0">
+                <TabsTrigger 
+                  value="code" 
+                  className="data-[state=active]:bg-slate-800 data-[state=active]:border-b-2 data-[state=active]:border-blue-500 rounded-none border-b-2 border-transparent"
+                >
+                  <Code className="w-4 h-4 mr-2" />
+                  Code
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="preview" 
+                  className="data-[state=active]:bg-slate-800 data-[state=active]:border-b-2 data-[state=active]:border-blue-500 rounded-none border-b-2 border-transparent"
+                >
+                  <Eye className="w-4 h-4 mr-2" />
+                  Preview
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="terminal" 
+                  className="data-[state=active]:bg-slate-800 data-[state=active]:border-b-2 data-[state=active]:border-blue-500 rounded-none border-b-2 border-transparent"
+                >
+                  <TerminalIcon className="w-4 h-4 mr-2" />
+                  Terminal
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="deploy" 
+                  className="data-[state=active]:bg-slate-800 data-[state=active]:border-b-2 data-[state=active]:border-blue-500 rounded-none border-b-2 border-transparent"
+                >
+                  <Rocket className="w-4 h-4 mr-2" />
+                  Deploy
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="collaborate" 
+                  className="data-[state=active]:bg-slate-800 data-[state=active]:border-b-2 data-[state=active]:border-blue-500 rounded-none border-b-2 border-transparent"
+                >
+                  <Users className="w-4 h-4 mr-2" />
+                  Share
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="settings" 
+                  className="data-[state=active]:bg-slate-800 data-[state=active]:border-b-2 data-[state=active]:border-blue-500 rounded-none border-b-2 border-transparent"
+                >
+                  <Settings className="w-4 h-4 mr-2" />
+                  Settings
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
 
-          <TabsContent value="preview">
-            <ProjectPreview files={projectFiles || []} projectType={project.type} />
-          </TabsContent>
+          {/* Tab Content */}
+          <div className="flex-1 overflow-hidden">
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsContent value="code" className="h-full m-0 p-4">
+                <CodeEditor projectId={project.id} files={projectFiles || []} />
+              </TabsContent>
 
-          <TabsContent value="terminal">
-            <Terminal projectId={project.id} projectType={project.type} />
-          </TabsContent>
+              <TabsContent value="preview" className="h-full m-0">
+                <ProjectPreview files={projectFiles || []} projectType={project.type} />
+              </TabsContent>
 
-          <TabsContent value="deploy">
-            <ProjectDeployment projectId={project.id} projectName={project.name} />
-          </TabsContent>
+              <TabsContent value="terminal" className="h-full m-0">
+                <Terminal projectId={project.id} projectType={project.type} />
+              </TabsContent>
 
-          <TabsContent value="collaborate">
-            <ProjectCollaboration projectId={project.id} isOwner={isOwner} />
-          </TabsContent>
+              <TabsContent value="deploy" className="h-full m-0 p-4">
+                <ProjectDeployment projectId={project.id} projectName={project.name} />
+              </TabsContent>
 
-          <TabsContent value="settings">
-            <Card className="bg-slate-900 border-slate-800">
-              <CardHeader>
-                <CardTitle className="text-white">Project Settings</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium text-slate-300">Project Name</label>
-                    <p className="text-white">{project.name}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-slate-300">Type</label>
-                    <p className="text-white capitalize">{project.type}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-slate-300">Status</label>
-                    <p className="text-white capitalize">{project.status}</p>
-                  </div>
-                  {project.description && (
-                    <div>
-                      <label className="text-sm font-medium text-slate-300">Description</label>
-                      <p className="text-white">{project.description}</p>
+              <TabsContent value="collaborate" className="h-full m-0 p-4">
+                <ProjectCollaboration projectId={project.id} isOwner={isOwner} />
+              </TabsContent>
+
+              <TabsContent value="settings" className="h-full m-0 p-4">
+                <Card className="bg-slate-900 border-slate-800">
+                  <CardHeader>
+                    <CardTitle className="text-white">Project Settings</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-sm font-medium text-slate-300">Project Name</label>
+                        <p className="text-white">{project.name}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-slate-300">Type</label>
+                        <p className="text-white capitalize">{project.type}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-slate-300">Status</label>
+                        <p className="text-white capitalize">{project.status}</p>
+                      </div>
+                      {project.description && (
+                        <div>
+                          <label className="text-sm font-medium text-slate-300">Description</label>
+                          <p className="text-white">{project.description}</p>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </div>
+        </div>
       </div>
     </div>
   );
