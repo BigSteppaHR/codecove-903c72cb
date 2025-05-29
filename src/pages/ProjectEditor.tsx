@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { ArrowLeft, Code, Eye, Terminal, Settings, Zap } from 'lucide-react';
+import { dark } from '@clerk/themes';
 import CodeViewer from '@/components/CodeViewer';
 import ProjectPrompt from '@/components/ProjectPrompt';
 
@@ -94,7 +95,7 @@ const ProjectEditor = () => {
           <div className="flex items-center space-x-4">
             <UserButton 
               appearance={{
-                baseTheme: 'dark',
+                baseTheme: dark,
                 elements: {
                   avatarBox: 'w-8 h-8'
                 }
@@ -130,7 +131,7 @@ const ProjectEditor = () => {
           </TabsList>
 
           <TabsContent value="prompt">
-            <ProjectPrompt project={project} />
+            <ProjectPrompt project={project as any} />
           </TabsContent>
 
           <TabsContent value="code">

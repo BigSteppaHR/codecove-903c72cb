@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
-import { Plus, Code, Smartphone, Globe, Calendar, Tokens } from 'lucide-react';
+import { Plus, Code, Smartphone, Globe, Calendar, Coins } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import CreateProjectDialog from '@/components/CreateProjectDialog';
 import ProjectCard from '@/components/ProjectCard';
@@ -107,7 +107,7 @@ const Dashboard = () => {
           </div>
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2 text-sm text-slate-300">
-              <Tokens className="w-4 h-4" />
+              <Coins className="w-4 h-4" />
               <span>{formatNumber(userProfile?.tokens_used || 0)} / {formatNumber(userProfile?.tokens_limit || 10000)}</span>
             </div>
             <Badge variant={userProfile?.plan_type === 'pro' ? 'default' : 'secondary'}>
@@ -115,7 +115,7 @@ const Dashboard = () => {
             </Badge>
             <UserButton 
               appearance={{
-                baseTheme: 'dark',
+                baseTheme: dark,
                 elements: {
                   avatarBox: 'w-10 h-10'
                 }
@@ -212,7 +212,7 @@ const Dashboard = () => {
             {projects?.map((project) => (
               <ProjectCard 
                 key={project.id} 
-                project={project} 
+                project={project as any} 
                 onUpdate={refetchProjects}
               />
             ))}
