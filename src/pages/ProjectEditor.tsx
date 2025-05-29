@@ -1,21 +1,20 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useUser, UserButton } from '@clerk/clerk-react';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, Code, Eye, Terminal, Settings, Zap } from 'lucide-react';
-import { dark } from '@clerk/themes';
+import { ArrowLeft, Code, Eye, Terminal, Settings, Zap, LogOut } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 import CodeViewer from '@/components/CodeViewer';
 import ProjectPrompt from '@/components/ProjectPrompt';
 
 const ProjectEditor = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useUser();
+  const { user, signOut } = useAuth();
   const [activeTab, setActiveTab] = useState('prompt');
 
   const { data: project, isLoading } = useQuery({
@@ -47,6 +46,11 @@ const ProjectEditor = () => {
     },
     enabled: !!id,
   });
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
 
   if (isLoading) {
     return (
@@ -93,14 +97,19 @@ const ProjectEditor = () => {
             </div>
           </div>
           <div className="flex items-center space-x-4">
-            <UserButton 
-              appearance={{
-                baseTheme: dark,
-                elements: {
-                  avatarBox: 'w-8 h-8'
-                }
-              }}
-            />
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-sm font-semibold">
+                {user?.email?.charAt(0).toUpperCase()}
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleSignOut}
+                className="text-slate-300 hover:text-white hover:bg-slate-800"
+              >
+                <LogOut className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </header>
