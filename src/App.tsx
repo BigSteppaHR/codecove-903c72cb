@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react';
 import LandingPage from "./pages/LandingPage";
+import AuthPage from "./pages/AuthPage";
 import Dashboard from "./pages/Dashboard";
 import ProjectEditor from "./pages/ProjectEditor";
 import NotFound from "./pages/NotFound";
@@ -20,6 +21,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/auth" element={<AuthPage />} />
           <Route 
             path="/dashboard" 
             element={
