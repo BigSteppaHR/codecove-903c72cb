@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, Code, Eye, Terminal as TerminalIcon, Settings, Zap, LogOut, Rocket, Users } from 'lucide-react';
+import { ArrowLeft, Code, Eye, Terminal as TerminalIcon, Settings, Zap, LogOut, Rocket, Users, Database } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import CodeEditor from '@/components/CodeEditor';
 import ProjectPrompt from '@/components/ProjectPrompt';
@@ -13,6 +13,7 @@ import ProjectPreview from '@/components/ProjectPreview';
 import Terminal from '@/components/Terminal';
 import ProjectDeployment from '@/components/ProjectDeployment';
 import ProjectCollaboration from '@/components/ProjectCollaboration';
+import DatabaseManager from '@/components/DatabaseManager';
 
 const ProjectEditor = () => {
   const { id } = useParams();
@@ -149,6 +150,13 @@ const ProjectEditor = () => {
                   Preview
                 </TabsTrigger>
                 <TabsTrigger 
+                  value="database" 
+                  className="data-[state=active]:bg-slate-800 data-[state=active]:border-b-2 data-[state=active]:border-blue-500 rounded-none border-b-2 border-transparent"
+                >
+                  <Database className="w-4 h-4 mr-2" />
+                  Database
+                </TabsTrigger>
+                <TabsTrigger 
                   value="terminal" 
                   className="data-[state=active]:bg-slate-800 data-[state=active]:border-b-2 data-[state=active]:border-blue-500 rounded-none border-b-2 border-transparent"
                 >
@@ -189,6 +197,10 @@ const ProjectEditor = () => {
 
               <TabsContent value="preview" className="h-full m-0">
                 <ProjectPreview files={projectFiles || []} projectType={project.type} />
+              </TabsContent>
+
+              <TabsContent value="database" className="h-full m-0">
+                <DatabaseManager projectId={project.id} />
               </TabsContent>
 
               <TabsContent value="terminal" className="h-full m-0">
