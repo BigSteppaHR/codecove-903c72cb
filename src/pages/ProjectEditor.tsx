@@ -6,13 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, Code, Eye, Terminal as TerminalIcon, Settings, Zap, LogOut, Rocket } from 'lucide-react';
+import { ArrowLeft, Code, Eye, Terminal as TerminalIcon, Settings, Zap, LogOut, Rocket, Users } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import CodeViewer from '@/components/CodeViewer';
 import ProjectPrompt from '@/components/ProjectPrompt';
 import ProjectPreview from '@/components/ProjectPreview';
 import Terminal from '@/components/Terminal';
 import ProjectDeployment from '@/components/ProjectDeployment';
+import ProjectCollaboration from '@/components/ProjectCollaboration';
 
 const ProjectEditor = () => {
   const { id } = useParams();
@@ -54,6 +55,9 @@ const ProjectEditor = () => {
     await signOut();
     navigate('/');
   };
+
+  // Check if current user is the project owner
+  const isOwner = project?.user_id === user?.id;
 
   if (isLoading) {
     return (
@@ -140,6 +144,10 @@ const ProjectEditor = () => {
               <Rocket className="w-4 h-4 mr-2" />
               Deploy
             </TabsTrigger>
+            <TabsTrigger value="collaborate" className="data-[state=active]:bg-slate-800">
+              <Users className="w-4 h-4 mr-2" />
+              Share
+            </TabsTrigger>
             <TabsTrigger value="settings" className="data-[state=active]:bg-slate-800">
               <Settings className="w-4 h-4 mr-2" />
               Settings
@@ -164,6 +172,10 @@ const ProjectEditor = () => {
 
           <TabsContent value="deploy">
             <ProjectDeployment projectId={project.id} projectName={project.name} />
+          </TabsContent>
+
+          <TabsContent value="collaborate">
+            <ProjectCollaboration projectId={project.id} isOwner={isOwner} />
           </TabsContent>
 
           <TabsContent value="settings">

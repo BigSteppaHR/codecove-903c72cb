@@ -92,6 +92,47 @@ export type Database = {
         }
         Relationships: []
       }
+      project_collaborators: {
+        Row: {
+          accepted_at: string | null
+          id: string
+          invited_at: string
+          invited_by: string | null
+          project_id: string
+          role: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          id?: string
+          invited_at?: string
+          invited_by?: string | null
+          project_id: string
+          role?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          accepted_at?: string | null
+          id?: string
+          invited_at?: string
+          invited_by?: string | null
+          project_id?: string
+          role?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_collaborators_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_files: {
         Row: {
           content: string | null
@@ -123,6 +164,50 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "project_files_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_invitations: {
+        Row: {
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string
+          project_id: string
+          role: string
+          token: string
+          used_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          invited_by: string
+          project_id: string
+          role?: string
+          token?: string
+          used_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string
+          project_id?: string
+          role?: string
+          token?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_invitations_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
