@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -23,6 +22,8 @@ const Dashboard = () => {
     queryFn: async () => {
       if (!user?.id) throw new Error('No user ID');
       
+      console.log('Fetching profile for user:', user.id);
+      
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -33,6 +34,7 @@ const Dashboard = () => {
         console.error('Profile fetch error:', error);
         // If profile doesn't exist, create one
         if (error.code === 'PGRST116') {
+          console.log('Profile not found, creating new profile for user:', user.id);
           const { data: newProfile, error: createError } = await supabase
             .from('profiles')
             .insert({
@@ -44,39 +46,57 @@ const Dashboard = () => {
             .select()
             .single();
           
-          if (createError) throw createError;
+          if (createError) {
+            console.error('Profile creation error:', createError);
+            throw createError;
+          }
+          console.log('Created new profile:', newProfile);
           return newProfile;
         }
         throw error;
       }
       
+      console.log('Fetched profile:', data);
       return data;
     },
     enabled: !!user?.id,
     retry: 1,
   });
 
-  // Fetch projects with better error handling and dependency on user profile
+  // Fetch projects with detailed error logging
   const { data: projects, isLoading: projectsLoading, refetch: refetchProjects, error: projectsError } = useQuery({
     queryKey: ['projects', user?.id],
     queryFn: async () => {
       if (!user?.id) throw new Error('No user ID');
       
       console.log('Fetching projects for user:', user.id);
+      console.log('User object:', user);
       
-      const { data, error } = await supabase
-        .from('projects')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-      
-      if (error) {
-        console.error('Projects fetch error:', error);
-        throw error;
+      try {
+        const { data, error, status, statusText } = await supabase
+          .from('projects')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+        
+        console.log('Projects query response:', { data, error, status, statusText });
+        
+        if (error) {
+          console.error('Projects fetch error details:', {
+            message: error.message,
+            code: error.code,
+            details: error.details,
+            hint: error.hint
+          });
+          throw error;
+        }
+        
+        console.log('Successfully fetched projects:', data);
+        return data || [];
+      } catch (err) {
+        console.error('Unexpected error in projects fetch:', err);
+        throw err;
       }
-      
-      console.log('Fetched projects:', data);
-      return data || [];
     },
     enabled: !!user?.id && !!userProfile,
     retry: 2,
@@ -114,7 +134,7 @@ const Dashboard = () => {
       console.error('Projects error:', projectsError);
       toast({
         title: 'Projects Error',
-        description: 'Failed to load projects. Please refresh the page.',
+        description: `Failed to load projects: ${projectsError.message}`,
         variant: 'destructive',
       });
     }
