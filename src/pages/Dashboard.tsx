@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -96,7 +95,7 @@ const Dashboard = () => {
     }
   };
 
-  // Show errors if they occur - but only show projects error if it's not a policy error
+  // Show errors if they occur - improve error filtering
   useEffect(() => {
     if (profileError) {
       console.error('Profile error:', profileError);
@@ -107,13 +106,24 @@ const Dashboard = () => {
       });
     }
     
-    if (projectsError && !projectsError.message?.includes('infinite recursion')) {
+    // Better filter for policy recursion errors using string matching
+    if (projectsError) {
       console.error('Projects error:', projectsError);
-      toast({
-        title: 'Projects Error',
-        description: `Failed to load projects: ${projectsError.message}`,
-        variant: 'destructive',
-      });
+      
+      // Check for various ways the recursion error might appear
+      const errorMessage = projectsError.message || '';
+      const isRecursionError = 
+        errorMessage.includes('infinite recursion') || 
+        errorMessage.includes('recursion detected') ||
+        errorMessage.includes('policy for relation "projects"');
+      
+      if (!isRecursionError) {
+        toast({
+          title: 'Projects Error',
+          description: `Failed to load projects: ${projectsError.message}`,
+          variant: 'destructive',
+        });
+      }
     }
   }, [profileError, projectsError, toast]);
 
