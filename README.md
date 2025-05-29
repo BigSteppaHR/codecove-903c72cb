@@ -1,73 +1,153 @@
-# Welcome to your Lovable project
+# ⚡️ Codecove — Bolt.new Clone
 
-## Project info
+Codecove has evolved into a **bolt.new style instant-creation experience**.  
+Paste `/new` in your URL bar, describe what you want, and get a live, shareable project in seconds.
 
-**URL**: https://lovable.dev/projects/f5fcce59-dce1-454d-b31d-888821e6bc69
+![Hero Screenshot](docs/screenshots/hero.png)
+*Instant generation, live preview, and one-click sharing.*
 
-## How can I edit this code?
+---
 
-There are several ways of editing your application.
+## 🚀  Why You’ll Love It
 
-**Use Lovable**
+| Feature | Description |
+|---------|-------------|
+| **⚡️ Instant Generation** | Claude 4.0 turns natural-language prompts into complete, production-ready projects. |
+| **📝 Real-time Editing** | Monaco Editor with IntelliSense plus Tailwind styling. |
+| **🖥 Live Preview** | Sandpack shows a running app while you type—no rebuilds. |
+| **🔗 Public Sharing** | Toggle **public** and hand out a `/p/ID` link—read-only or forkable. |
+| **🔄 Bolt.new Workflow** | `/new` creates, `/p/{id}` shares. Zero dashboards or config screens. |
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/f5fcce59-dce1-454d-b31d-888821e6bc69) and start prompting.
+---
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🗺  Route Map
 
-**Use your preferred IDE**
+| Route | Purpose |
+|-------|---------|
+| `/` | Marketing landing page (auto-redirects authenticated users to `/new`). |
+| `/new` | Instant Editor – create & edit a private project. |
+| `/p/:id` | Public, read-only share view with **Fork** button. |
+| `/auth` | Supabase Auth sign-in / sign-up. |
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+---
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## 🛠  Tech Stack
 
-Follow these steps:
+| Layer | Tooling |
+|-------|---------|
+| **AI** | Anthropic **Claude 4.0** (chat completions) |
+| **Frontend** | React 18 + Vite 5, TypeScript, Tailwind CSS, Shadcn-UI |
+| **Code Editor** | `@monaco-editor/react` |
+| **Live Preview** | `@codesandbox/sandpack-react` |
+| **State/Data** | React Query, Zod, Framer Motion |
+| **Backend/API** | **Supabase Edge Functions** (Deno) |
+| **Auth & DB** | Supabase Auth + Postgres (RLS) |
+| **ID Generation** | `nanoid` |
+| **Icons** | Lucide-React |
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+> Previous Clerk authentication has been **fully replaced** by Supabase Auth.
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+---
 
-# Step 3: Install the necessary dependencies.
-npm i
+## ⚙️  Setup
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+1. **Clone**
+   ```bash
+   git clone https://github.com/BigSteppaHR/codecove-903c72cb.git
+   cd codecove-903c72cb
+   ```
 
-**Edit a file directly in GitHub**
+2. **Install**
+   ```bash
+   npm install
+   # or
+   bun install
+   ```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+3. **Environment**
 
-**Use GitHub Codespaces**
+   Create `.env`:
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+   ```
+   VITE_SUPABASE_URL=https://<your-project>.supabase.co
+   VITE_SUPABASE_ANON_KEY=<public-anon-key>
+   VITE_SUPABASE_SERVICE_ROLE=<service-role-key>   # optional, used only by functions
+   VITE_ANTHROPIC_API_KEY=<your-claude-api-key>
+   ```
 
-## What technologies are used for this project?
+4. **Supabase**
 
-This project is built with:
+   ```bash
+   supabase db reset         # applies migrations in supabase/migrations
+   supabase functions deploy generate-code
+   supabase start            # local dev db & Edge runtime
+   ```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+5. **Run Dev**
 
-## How can I deploy this project?
+   ```bash
+   npm run dev
+   # open http://localhost:5173/new
+   ```
 
-Simply open [Lovable](https://lovable.dev/projects/f5fcce59-dce1-454d-b31d-888821e6bc69) and click on Share -> Publish.
+6. **Build / Preview**
 
-## Can I connect a custom domain to my Lovable project?
+   ```bash
+   npm run build
+   npm run preview
+   ```
 
-Yes, you can!
+---
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## 🌐  Deployment
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+| Target | Steps |
+|--------|-------|
+| **Vercel** | 1) Import Git repo<br>2) Add env vars (see above)<br>3) Set build command `npm run build` and output `dist`.<br>4) Enable `supabase/functions` as Edge Functions (requires supabase link). |
+| **Supabase** | `supabase functions deploy generate-code` (auto-deploys on push if CI configured). |
+| **GitHub Pages / Netlify** | Static front-end only (`dist`) can be hosted anywhere; AI & DB calls remain on Supabase. |
+
+---
+
+## 📸  Screenshots / Usage
+
+| View | Image |
+|------|-------|
+| Instant Editor | ![Editor](docs/screenshots/editor.png) |
+| Prompt Templates | ![Prompt](docs/screenshots/prompt.png) |
+| Public Share Page | ![Share](docs/screenshots/share.png) |
+
+> Screenshots live in `docs/screenshots/`. Feel free to update with your own.
+
+---
+
+## 🤝  Contributing
+
+1. **Fork** the repo & create a feature branch  
+2. Run `npm run dev` to reproduce locally  
+3. Commit using [Conventional Commits](https://www.conventionalcommits.org/)  
+4. Open a Pull Request – template will guide you  
+5. Be kind, clear, and concise ❤️
+
+### Code Style
+
+- **ESLint** & **Prettier** enforce standards  
+- Use descriptive names & TypeScript strict null checks  
+- Keep UI in Shadcn components; avoid inline styles except for dynamic Tailwind classes
+
+---
+
+## ✨  Roadmap
+
+- Expo live device preview for mobile projects  
+- One-click deploy to Vercel / Netlify from the editor  
+- Real-time multiplayer collaboration  
+- Marketplace for prompt templates  
+
+Stay tuned!
+
+---
+
+## License
+
+MIT © Henry Reid / Codecove
