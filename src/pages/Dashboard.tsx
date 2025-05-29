@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -22,8 +23,6 @@ const Dashboard = () => {
     queryFn: async () => {
       if (!user?.id) throw new Error('No user ID');
       
-      console.log('Fetching profile for user:', user.id);
-      
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -31,10 +30,8 @@ const Dashboard = () => {
         .single();
       
       if (error) {
-        console.error('Profile fetch error:', error);
         // If profile doesn't exist, create one
         if (error.code === 'PGRST116') {
-          console.log('Profile not found, creating new profile for user:', user.id);
           const { data: newProfile, error: createError } = await supabase
             .from('profiles')
             .insert({
@@ -47,56 +44,36 @@ const Dashboard = () => {
             .single();
           
           if (createError) {
-            console.error('Profile creation error:', createError);
             throw createError;
           }
-          console.log('Created new profile:', newProfile);
           return newProfile;
         }
         throw error;
       }
       
-      console.log('Fetched profile:', data);
       return data;
     },
     enabled: !!user?.id,
     retry: 1,
   });
 
-  // Fetch projects with detailed error logging
+  // Fetch projects
   const { data: projects, isLoading: projectsLoading, refetch: refetchProjects, error: projectsError } = useQuery({
     queryKey: ['projects', user?.id],
     queryFn: async () => {
       if (!user?.id) throw new Error('No user ID');
       
-      console.log('Fetching projects for user:', user.id);
-      console.log('User object:', user);
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
       
-      try {
-        const { data, error, status, statusText } = await supabase
-          .from('projects')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false });
-        
-        console.log('Projects query response:', { data, error, status, statusText });
-        
-        if (error) {
-          console.error('Projects fetch error details:', {
-            message: error.message,
-            code: error.code,
-            details: error.details,
-            hint: error.hint
-          });
-          throw error;
-        }
-        
-        console.log('Successfully fetched projects:', data);
-        return data || [];
-      } catch (err) {
-        console.error('Unexpected error in projects fetch:', err);
-        throw err;
+      if (error) {
+        throw error;
       }
+      
+      return data || [];
     },
     enabled: !!user?.id && !!userProfile,
     retry: 2,
