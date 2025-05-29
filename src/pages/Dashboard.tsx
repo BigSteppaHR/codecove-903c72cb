@@ -1,20 +1,19 @@
 
 import { useState, useEffect } from 'react';
-import { useUser, UserButton } from '@clerk/clerk-react';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
-import { Plus, Code, Smartphone, Globe, Calendar, Coins } from 'lucide-react';
+import { Plus, Code, Calendar, Coins, LogOut } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { dark } from '@clerk/themes';
+import { useAuth } from '@/contexts/AuthContext';
 import CreateProjectDialog from '@/components/CreateProjectDialog';
 import ProjectCard from '@/components/ProjectCard';
 
 const Dashboard = () => {
-  const { user } = useUser();
+  const { user, signOut } = useAuth();
   const { toast } = useToast();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
@@ -23,9 +22,9 @@ const Dashboard = () => {
     queryKey: ['userProfile', user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('users')
+        .from('profiles')
         .select('*')
-        .eq('clerk_user_id', user?.id)
+        .eq('id', user?.id)
         .single();
       
       if (error && error.code !== 'PGRST116') {
@@ -51,33 +50,21 @@ const Dashboard = () => {
     enabled: !!userProfile?.id,
   });
 
-  // Create user profile if it doesn't exist
-  useEffect(() => {
-    const createUserProfile = async () => {
-      if (user && !userProfile && !profileLoading) {
-        const { error } = await supabase
-          .from('users')
-          .insert({
-            clerk_user_id: user.id,
-            email: user.emailAddresses[0]?.emailAddress || '',
-            first_name: user.firstName || '',
-            last_name: user.lastName || '',
-            avatar_url: user.imageUrl || '',
-          });
-
-        if (error) {
-          console.error('Error creating user profile:', error);
-          toast({
-            title: 'Error',
-            description: 'Failed to create user profile. Please try again.',
-            variant: 'destructive',
-          });
-        }
-      }
-    };
-
-    createUserProfile();
-  }, [user, userProfile, profileLoading]);
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast({
+        title: 'Signed out',
+        description: 'You have been signed out successfully.',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: 'Failed to sign out. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
 
   const tokenUsagePercentage = userProfile 
     ? (userProfile.tokens_used / userProfile.tokens_limit) * 100 
@@ -114,14 +101,19 @@ const Dashboard = () => {
             <Badge variant={userProfile?.plan_type === 'pro' ? 'default' : 'secondary'}>
               {userProfile?.plan_type === 'pro' ? 'Pro' : 'Free'}
             </Badge>
-            <UserButton 
-              appearance={{
-                baseTheme: dark,
-                elements: {
-                  avatarBox: 'w-10 h-10'
-                }
-              }}
-            />
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-sm font-semibold">
+                {user?.email?.charAt(0).toUpperCase()}
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleSignOut}
+                className="text-slate-300 hover:text-white hover:bg-slate-800"
+              >
+                <LogOut className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </header>
@@ -129,7 +121,7 @@ const Dashboard = () => {
       <div className="container mx-auto px-4 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h2 className="text-3xl font-bold mb-2">Welcome back, {user?.firstName}!</h2>
+          <h2 className="text-3xl font-bold mb-2">Welcome back, {userProfile?.first_name || 'Developer'}!</h2>
           <p className="text-slate-400">Build amazing apps with AI-powered code generation.</p>
         </div>
 
