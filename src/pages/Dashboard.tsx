@@ -17,37 +17,69 @@ const Dashboard = () => {
   const { toast } = useToast();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
-  // Fetch user profile and projects
-  const { data: userProfile, isLoading: profileLoading } = useQuery({
+  // Fetch user profile with better error handling
+  const { data: userProfile, isLoading: profileLoading, error: profileError } = useQuery({
     queryKey: ['userProfile', user?.id],
     queryFn: async () => {
+      if (!user?.id) throw new Error('No user ID');
+      
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', user?.id)
+        .eq('id', user.id)
         .single();
       
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
+        console.error('Profile fetch error:', error);
+        // If profile doesn't exist, create one
+        if (error.code === 'PGRST116') {
+          const { data: newProfile, error: createError } = await supabase
+            .from('profiles')
+            .insert({
+              id: user.id,
+              email: user.email,
+              first_name: user.user_metadata?.first_name || '',
+              last_name: user.user_metadata?.last_name || '',
+            })
+            .select()
+            .single();
+          
+          if (createError) throw createError;
+          return newProfile;
+        }
         throw error;
       }
       
       return data;
     },
     enabled: !!user?.id,
+    retry: 1,
   });
 
-  const { data: projects, isLoading: projectsLoading, refetch: refetchProjects } = useQuery({
+  // Fetch projects with better error handling and dependency on user profile
+  const { data: projects, isLoading: projectsLoading, refetch: refetchProjects, error: projectsError } = useQuery({
     queryKey: ['projects', user?.id],
     queryFn: async () => {
+      if (!user?.id) throw new Error('No user ID');
+      
+      console.log('Fetching projects for user:', user.id);
+      
       const { data, error } = await supabase
         .from('projects')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
-      return data;
+      if (error) {
+        console.error('Projects fetch error:', error);
+        throw error;
+      }
+      
+      console.log('Fetched projects:', data);
+      return data || [];
     },
-    enabled: !!userProfile?.id,
+    enabled: !!user?.id && !!userProfile,
+    retry: 2,
   });
 
   const handleSignOut = async () => {
@@ -58,6 +90,7 @@ const Dashboard = () => {
         description: 'You have been signed out successfully.',
       });
     } catch (error: any) {
+      console.error('Sign out error:', error);
       toast({
         title: 'Error',
         description: 'Failed to sign out. Please try again.',
@@ -65,6 +98,27 @@ const Dashboard = () => {
       });
     }
   };
+
+  // Show errors if they occur
+  useEffect(() => {
+    if (profileError) {
+      console.error('Profile error:', profileError);
+      toast({
+        title: 'Profile Error',
+        description: 'Failed to load user profile. Please refresh the page.',
+        variant: 'destructive',
+      });
+    }
+    
+    if (projectsError) {
+      console.error('Projects error:', projectsError);
+      toast({
+        title: 'Projects Error',
+        description: 'Failed to load projects. Please refresh the page.',
+        variant: 'destructive',
+      });
+    }
+  }, [profileError, projectsError, toast]);
 
   const tokenUsagePercentage = userProfile 
     ? (userProfile.tokens_used / userProfile.tokens_limit) * 100 
@@ -74,7 +128,7 @@ const Dashboard = () => {
     return new Intl.NumberFormat().format(num);
   };
 
-  if (profileLoading || projectsLoading) {
+  if (profileLoading) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
         <div className="text-white">Loading...</div>
@@ -183,7 +237,13 @@ const Dashboard = () => {
           </Button>
         </div>
 
-        {projects?.length === 0 ? (
+        {projectsLoading ? (
+          <Card className="bg-slate-900 border-slate-800 text-center py-12">
+            <CardContent>
+              <div className="text-white">Loading projects...</div>
+            </CardContent>
+          </Card>
+        ) : projects?.length === 0 ? (
           <Card className="bg-slate-900 border-slate-800 text-center py-12">
             <CardContent>
               <Code className="w-12 h-12 text-slate-600 mx-auto mb-4" />
