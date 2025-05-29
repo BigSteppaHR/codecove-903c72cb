@@ -9,6 +9,7 @@ import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
 import { Plus, Code, Smartphone, Globe, Calendar, Coins } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { dark } from '@clerk/themes';
 import CreateProjectDialog from '@/components/CreateProjectDialog';
 import ProjectCard from '@/components/ProjectCard';
 
