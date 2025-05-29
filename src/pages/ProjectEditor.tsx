@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -6,11 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, Code, Eye, Terminal, Settings, Zap, LogOut } from 'lucide-react';
+import { ArrowLeft, Code, Eye, Terminal as TerminalIcon, Settings, Zap, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import CodeViewer from '@/components/CodeViewer';
 import ProjectPrompt from '@/components/ProjectPrompt';
 import ProjectPreview from '@/components/ProjectPreview';
+import Terminal from '@/components/Terminal';
 
 const ProjectEditor = () => {
   const { id } = useParams();
@@ -131,7 +131,7 @@ const ProjectEditor = () => {
               Preview
             </TabsTrigger>
             <TabsTrigger value="terminal" className="data-[state=active]:bg-slate-800">
-              <Terminal className="w-4 h-4 mr-2" />
+              <TerminalIcon className="w-4 h-4 mr-2" />
               Terminal
             </TabsTrigger>
             <TabsTrigger value="settings" className="data-[state=active]:bg-slate-800">
@@ -153,17 +153,7 @@ const ProjectEditor = () => {
           </TabsContent>
 
           <TabsContent value="terminal">
-            <Card className="bg-slate-900 border-slate-800">
-              <CardHeader>
-                <CardTitle className="text-white">Terminal</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="bg-black p-4 rounded-lg font-mono text-green-400">
-                  <div className="mb-2">$ Welcome to Codecove Terminal</div>
-                  <div className="text-slate-500">Online terminal functionality coming soon...</div>
-                </div>
-              </CardContent>
-            </Card>
+            <Terminal projectId={project.id} projectType={project.type} />
           </TabsContent>
 
           <TabsContent value="settings">
