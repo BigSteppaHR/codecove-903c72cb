@@ -24,26 +24,37 @@ const ProjectCollaboration = ({ projectId, isOwner }: ProjectCollaborationProps)
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<'editor' | 'viewer'>('viewer');
 
-  // Fetch collaborators
+  // Fetch collaborators - we'll get just the collaboration data first
   const { data: collaborators } = useQuery({
     queryKey: ['projectCollaborators', projectId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('project_collaborators')
-        .select(`
-          *,
-          profiles:user_id (
-            email,
-            first_name,
-            last_name
-          )
-        `)
+        .select('*')
         .eq('project_id', projectId)
         .eq('status', 'accepted');
       
       if (error) throw error;
       return data;
     },
+  });
+
+  // Fetch user profiles for the collaborators
+  const { data: userProfiles } = useQuery({
+    queryKey: ['userProfiles', collaborators?.map(c => c.user_id)],
+    queryFn: async () => {
+      if (!collaborators?.length) return [];
+      
+      const userIds = collaborators.map(c => c.user_id);
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, email, first_name, last_name')
+        .in('id', userIds);
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!collaborators?.length,
   });
 
   // Fetch pending invitations
@@ -173,6 +184,11 @@ const ProjectCollaboration = ({ projectId, isOwner }: ProjectCollaborationProps)
     }
   };
 
+  // Helper function to get user profile for a collaborator
+  const getUserProfile = (userId: string) => {
+    return userProfiles?.find(profile => profile.id === userId);
+  };
+
   return (
     <div className="space-y-6">
       {/* Invite New Collaborator */}
@@ -251,20 +267,21 @@ const ProjectCollaboration = ({ projectId, isOwner }: ProjectCollaborationProps)
             {/* Collaborators */}
             {collaborators?.map((collaborator) => {
               const RoleIcon = getRoleIcon(collaborator.role);
+              const profile = getUserProfile(collaborator.user_id);
+              const displayName = profile?.first_name && profile?.last_name
+                ? `${profile.first_name} ${profile.last_name}`
+                : profile?.email || 'Unknown User';
+              
               return (
                 <div key={collaborator.id} className="flex items-center justify-between p-3 bg-slate-800 rounded-lg">
                   <div className="flex items-center space-x-3">
                     <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-blue-600 rounded-full flex items-center justify-center text-sm font-semibold">
-                      {collaborator.profiles?.email?.charAt(0).toUpperCase()}
+                      {displayName.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <p className="text-white font-medium">
-                        {collaborator.profiles?.first_name && collaborator.profiles?.last_name
-                          ? `${collaborator.profiles.first_name} ${collaborator.profiles.last_name}`
-                          : collaborator.profiles?.email}
-                      </p>
-                      {collaborator.profiles?.email && (
-                        <p className="text-slate-400 text-sm">{collaborator.profiles.email}</p>
+                      <p className="text-white font-medium">{displayName}</p>
+                      {profile?.email && displayName !== profile.email && (
+                        <p className="text-slate-400 text-sm">{profile.email}</p>
                       )}
                     </div>
                   </div>
