@@ -7,7 +7,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Zap, Loader2, Sparkles } from 'lucide-react';
+import { Zap, Loader2, Sparkles, AlertTriangle } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Project {
   id: string;
@@ -24,131 +25,95 @@ interface ProjectPromptProps {
 const ProjectPrompt = ({ project }: ProjectPromptProps) => {
   const [prompt, setPrompt] = useState('');
   const { toast } = useToast();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
 
   const generateCodeMutation = useMutation({
     mutationFn: async (promptText: string) => {
-      // Update project status to generating
-      await supabase
-        .from('projects')
-        .update({ status: 'generating' })
-        .eq('id', project.id);
+      if (!user) throw new Error('User not authenticated');
 
-      // For now, we'll simulate the AI generation
-      // In a real implementation, this would call Claude API
-      const simulatedFiles = [
-        {
-          project_id: project.id,
-          file_path: 'package.json',
-          content: JSON.stringify({
-            name: project.name.toLowerCase().replace(/\s+/g, '-'),
-            version: '1.0.0',
-            type: 'module',
-            scripts: {
-              dev: 'vite',
-              build: 'vite build',
-              preview: 'vite preview'
-            },
-            dependencies: {
-              'react': '^18.0.0',
-              'react-dom': '^18.0.0'
-            }
-          }, null, 2),
-          file_type: 'json'
-        },
-        {
-          project_id: project.id,
-          file_path: 'src/App.jsx',
-          content: `import React from 'react'
-
-function App() {
-  return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">
-          ${project.name}
-        </h1>
-        <p className="text-lg text-gray-600">
-          Generated with AI: ${promptText}
-        </p>
-      </div>
-    </div>
-  )
-}
-
-export default App`,
-          file_type: 'jsx'
-        },
-        {
-          project_id: project.id,
-          file_path: 'index.html',
-          content: `<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>${project.name}</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
-</html>`,
-          file_type: 'html'
+      const { data, error } = await supabase.functions.invoke('generate-code', {
+        body: {
+          prompt: promptText,
+          projectId: project.id,
+          projectName: project.name,
+          projectType: project.type
         }
-      ];
-
-      // Clear existing files
-      await supabase
-        .from('project_files')
-        .delete()
-        .eq('project_id', project.id);
-
-      // Insert new files
-      const { error } = await supabase
-        .from('project_files')
-        .insert(simulatedFiles);
+      });
 
       if (error) throw error;
-
-      // Update project status to ready
-      await supabase
-        .from('projects')
-        .update({ status: 'ready' })
-        .eq('id', project.id);
-
-      return { success: true };
+      return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast({
-        title: 'Code generated!',
-        description: 'Your application has been generated successfully.',
+        title: 'Code generation started!',
+        description: `Using ~${data.tokensUsed} tokens. Check the Code tab in a few moments.`,
       });
       setPrompt('');
+      // Invalidate queries to refresh project status
       queryClient.invalidateQueries({ queryKey: ['project', project.id] });
       queryClient.invalidateQueries({ queryKey: ['projectFiles', project.id] });
+      queryClient.invalidateQueries({ queryKey: ['userProfile', user?.id] });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('Error generating code:', error);
+      
+      let errorMessage = 'Failed to generate code. Please try again.';
+      if (error.message?.includes('Claude API key not configured')) {
+        errorMessage = 'AI service not configured. Please contact support.';
+      } else if (error.message?.includes('Unauthorized')) {
+        errorMessage = 'Authentication expired. Please sign in again.';
+      }
+
       toast({
         title: 'Generation failed',
-        description: 'Failed to generate code. Please try again.',
+        description: errorMessage,
         variant: 'destructive',
       });
-      // Reset status on error
-      supabase
-        .from('projects')
-        .update({ status: 'draft' })
-        .eq('id', project.id);
     },
   });
 
   const handleGenerate = () => {
     if (!prompt.trim()) return;
+    if (!user) {
+      toast({
+        title: 'Authentication required',
+        description: 'Please sign in to generate code.',
+        variant: 'destructive',
+      });
+      return;
+    }
     generateCodeMutation.mutate(prompt);
   };
 
   const isGenerating = project.status === 'generating' || generateCodeMutation.isPending;
+
+  // Example prompts based on project type
+  const getExamplePrompts = () => {
+    switch (project.type) {
+      case 'web':
+        return [
+          'Create a todo app with add, edit, delete, and mark complete functionality',
+          'Build a weather app that shows current weather and 5-day forecast',
+          'Make a blog with posts, comments, and user authentication',
+          'Create a dashboard with charts and data visualization'
+        ];
+      case 'mobile':
+        return [
+          'Create a mobile fitness tracker with workout logging',
+          'Build a recipe app with search and favorites',
+          'Make a expense tracker with categories and budgets',
+          'Create a social media app with posts and messaging'
+        ];
+      default:
+        return [
+          'Create a full-stack e-commerce platform with user accounts',
+          'Build a project management tool with teams and tasks',
+          'Make a social network with posts, friends, and chat',
+          'Create a learning management system with courses'
+        ];
+    }
+  };
 
   return (
     <Card className="bg-slate-900 border-slate-800">
@@ -179,13 +144,26 @@ export default App`,
             <Textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              placeholder={`Describe your ${project.type} application. For example:
-- "Create a todo app with add, edit, and delete functionality"
-- "Build a weather app that shows current weather and 5-day forecast"
-- "Make a chat application with real-time messaging"`}
+              placeholder={`Describe your ${project.type} application in detail...`}
               className="bg-slate-800 border-slate-700 text-white min-h-[120px]"
               disabled={isGenerating}
             />
+          </div>
+
+          <div className="bg-slate-800 p-4 rounded-lg">
+            <h4 className="text-sm font-medium text-slate-300 mb-3">Example prompts:</h4>
+            <div className="space-y-2">
+              {getExamplePrompts().slice(0, 3).map((example, index) => (
+                <button
+                  key={index}
+                  onClick={() => setPrompt(example)}
+                  disabled={isGenerating}
+                  className="text-left text-sm text-slate-400 hover:text-blue-400 block transition-colors disabled:opacity-50"
+                >
+                  • {example}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="bg-blue-900/20 border border-blue-800 rounded-lg p-4">
@@ -194,7 +172,7 @@ export default App`,
               <div className="text-sm">
                 <p className="text-blue-300 font-medium">AI Model: Claude 3.5 Sonnet</p>
                 <p className="text-slate-400">
-                  Tokens will be consumed based on the generated code size
+                  High-quality code generation with modern best practices
                 </p>
               </div>
             </div>
@@ -202,18 +180,18 @@ export default App`,
 
           <Button
             onClick={handleGenerate}
-            disabled={!prompt.trim() || isGenerating}
-            className="w-full bg-blue-600 hover:bg-blue-700"
+            disabled={!prompt.trim() || isGenerating || !user}
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-700"
           >
             {isGenerating ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Generating...
+                Generating Code...
               </>
             ) : (
               <>
                 <Zap className="w-4 h-4 mr-2" />
-                Generate Code
+                Generate with AI
               </>
             )}
           </Button>
@@ -227,6 +205,18 @@ export default App`,
             </div>
             <p className="text-slate-400 text-sm mt-1">
               Check the Code tab to view your generated files
+            </p>
+          </div>
+        )}
+
+        {project.status === 'generating' && (
+          <div className="bg-yellow-900/20 border border-yellow-800 rounded-lg p-4">
+            <div className="flex items-center space-x-2">
+              <Loader2 className="w-4 h-4 text-yellow-400 animate-spin" />
+              <p className="text-yellow-300 font-medium">AI is generating your code...</p>
+            </div>
+            <p className="text-slate-400 text-sm mt-1">
+              This usually takes 30-60 seconds. You can switch tabs while waiting.
             </p>
           </div>
         )}

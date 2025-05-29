@@ -48,7 +48,7 @@ export type Database = {
             foreignKeyName: "billing_history_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "users"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -135,10 +135,13 @@ export type Database = {
           created_at: string | null
           deploy_url: string | null
           description: string | null
+          framework: string | null
           github_repo_url: string | null
           id: string
+          last_generated_at: string | null
           name: string
           status: string | null
+          template: string | null
           type: string | null
           updated_at: string | null
           user_id: string | null
@@ -147,10 +150,13 @@ export type Database = {
           created_at?: string | null
           deploy_url?: string | null
           description?: string | null
+          framework?: string | null
           github_repo_url?: string | null
           id?: string
+          last_generated_at?: string | null
           name: string
           status?: string | null
+          template?: string | null
           type?: string | null
           updated_at?: string | null
           user_id?: string | null
@@ -159,10 +165,13 @@ export type Database = {
           created_at?: string | null
           deploy_url?: string | null
           description?: string | null
+          framework?: string | null
           github_repo_url?: string | null
           id?: string
+          last_generated_at?: string | null
           name?: string
           status?: string | null
+          template?: string | null
           type?: string | null
           updated_at?: string | null
           user_id?: string | null
@@ -172,7 +181,7 @@ export type Database = {
             foreignKeyName: "projects_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "users"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -220,55 +229,10 @@ export type Database = {
             foreignKeyName: "token_usage_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "users"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
-      }
-      users: {
-        Row: {
-          avatar_url: string | null
-          clerk_user_id: string
-          created_at: string | null
-          email: string
-          first_name: string | null
-          id: string
-          last_name: string | null
-          plan_type: string | null
-          stripe_customer_id: string | null
-          tokens_limit: number | null
-          tokens_used: number | null
-          updated_at: string | null
-        }
-        Insert: {
-          avatar_url?: string | null
-          clerk_user_id: string
-          created_at?: string | null
-          email: string
-          first_name?: string | null
-          id?: string
-          last_name?: string | null
-          plan_type?: string | null
-          stripe_customer_id?: string | null
-          tokens_limit?: number | null
-          tokens_used?: number | null
-          updated_at?: string | null
-        }
-        Update: {
-          avatar_url?: string | null
-          clerk_user_id?: string
-          created_at?: string | null
-          email?: string
-          first_name?: string | null
-          id?: string
-          last_name?: string | null
-          plan_type?: string | null
-          stripe_customer_id?: string | null
-          tokens_limit?: number | null
-          tokens_used?: number | null
-          updated_at?: string | null
-        }
-        Relationships: []
       }
     }
     Views: {
