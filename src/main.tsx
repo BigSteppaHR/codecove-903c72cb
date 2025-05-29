@@ -5,7 +5,7 @@ import { dark } from '@clerk/themes'
 import App from './App.tsx'
 import './index.css'
 
-const PUBLISHABLE_KEY = "pk_test_YWNjZXB0aWJsZS13aGFsZS0yNi5jbGVyay5hY2NvdW50cy5kZXYk"
+const PUBLISHABLE_KEY = "pk_test_b3Blbi1yYWNjb29uLTE3LmNsZXJrLmFjY291bnRzLmRldiQ"
 
 if (!PUBLISHABLE_KEY) {
   throw new Error("Missing Publishable Key")
